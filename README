@@ -1,0 +1,93 @@
+NAME
+    Bench - Benchmark running times of Perl code
+
+VERSION
+    version 0.01
+
+SYNOPSIS
+     # time the whole program
+     % perl -MBench -e'...'
+     0.1234s
+
+     # basic usage of bench()
+     % perl -MBench -e'bench sub { ... }'
+     397 calls (198/s), 2.0054s (0.0051s/call)
+
+     # get bench result in a variable
+     % perl -MBench -E'my $res = bench sub { ... }'
+
+     # specify bench options
+     % perl -MBench -E'bench sub { ... }, 100'
+     % perl -MBench -E'bench sub { ... }, {n=>-5}'
+
+     # use Dumbbench as the backend
+     % perl -MDumbbench -MBench -E'bench sub { ... }'
+     % perl -MBench -E'bench sub { ... }, {dummbench=>1, dumbbench_options=>{...}}'
+     Ran 26 iterations (6 outliers).
+     Rounded run time per iteration: 2.9029e-02 +/- 4.8e-05 (0.2%)
+
+     # bench multiple codes
+     % perl -MBench -E'bench {subs=>{a=>sub {...}, b=>sub {...}}, n=>-2}'
+     a: 397 calls (198/s), 2.0054s (0.0051s/call)
+     b: 294 calls (146/s), 2.0094s (0.0068s/call)
+
+DESCRIPTION
+    This module is an alternative to Benchmark. It provides some nice
+    defaults and a simpler interface. There is only one function, bench(),
+    and it is exported by default. If bench() is never called, the whole
+    program will be timed.
+
+    This module can utilize Dumbbench as the backend.
+
+FUNCTIONS
+  bench
+    Syntax:
+
+     bench(CODEREF)                    # bench a single sub, default options
+     bench(CODEREF, HASHREF)           # specify options
+     bench(CODEREF, INT)               # equivalent to bench(CODEREF, {n=>INT})
+     bench(HASHREF)                    # bench multiple subs, must specify 'subs'
+
+    Run Perl code and time it. Exported by default. Will print the result if
+    called in void context.
+
+    Options are specified in HASHREF. Available options:
+
+    *   n => INT
+
+        Run the code "n" times, or if negative, until at least "n" seconds.
+
+        If unspecified, the default behaviour is: if code runs for more than
+        2 seconds, it will only be run once (n=1). Otherwise n=-2.
+
+    *   subs => HASHREF
+
+        Specify subroutine(s) to time. You normally need not specify this
+        option, unless you want to time several subroutines instead of just
+        one.
+
+    *   dumbbench => BOOL
+
+        If 0, do not use Dumbbench even if it is available. If 1, require
+        and use Dumbbench. If left undef, will use Dumbbench if it is
+        already loaded.
+
+    *   dumbbench_options => HASHREF
+
+        Options that will be passed to Dumbbench constructor, e.g.
+        {target_rel_precision=>0.005, initial_runs=>20}.
+
+SEE ALSO
+    Benchmark
+
+    Dumbbench
+
+AUTHOR
+    Steven Haryanto <stevenharyanto@gmail.com>
+
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2011 by Steven Haryanto.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+
