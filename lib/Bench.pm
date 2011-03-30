@@ -1,6 +1,6 @@
 package Bench;
 BEGIN {
-  $Bench::VERSION = '0.01';
+  $Bench::VERSION = '0.02';
 }
 # ABSTRACT: Benchmark running times of Perl code
 
@@ -12,15 +12,38 @@ use Module::Loaded;
 use Time::HiRes qw/gettimeofday tv_interval/;
 
 my $bench_called;
-my $t0;
-my $fmt = "%.4fs";
+my ($t0, $ti);
+
+sub _set_time0    { $t0 = [gettimeofday] }
+
+sub _set_interval { $ti = tv_interval($t0, [gettimeofday]) }
 
 sub import {
-    $t0 = [gettimeofday];
-
+    _set_time0;
     no strict 'refs';
     my $caller = caller();
     *{"$caller\::bench"} = \&bench;
+}
+
+sub _fmt_sec {
+    my $t = shift;
+    my $fmt;
+
+    if ($t > 1) {
+        $fmt = "%.3fs";
+    } elsif ($t > 0.1) {
+        $fmt = "%.4fs";
+    } else {
+        $t *= 1000;
+        if ($t > 0.1) {
+            $fmt = "%.3fms";
+        } elsif ($t > 0.01) {
+            $fmt = "%.4fms";
+        } else {
+            $fmt = "%.5fms";
+        }
+    }
+    sprintf($fmt, $t);
 }
 
 sub bench($;$) {
@@ -66,37 +89,47 @@ sub bench($;$) {
             my $code = $opts->{subs}{$codename};
 
             my $n = $opts->{n};
-            my $ti;
 
             my $i = 0;
-            $t0 = [gettimeofday];
 
-            if (!defined($n)) {
-                $code->();
-                $ti = tv_interval($t0, [gettimeofday]);
-                $i++;
-                if ($ti >= 2) {
-                    $n = 1;
-                } else {
-                    $n = -2;
+            # run code once to set default n & j (to reduce the number of
+            # time-interval-taking when n is negative)
+            my $j = 1;
+            _set_time0;
+            $code->();
+            _set_interval;
+            $i++;
+            if ($ti >= 2) {
+                $n //= 1;
+            } else {
+                $n //= -2;
+                $j = $ti ? int(1/$ti) : 1000;
+            }
+
+            _set_time0;
+            if ($n >= 0) {
+                while ($i < $n) {
+                    $code->();
+                    $i++;
                 }
-                undef $ti;
+                _set_interval;
+            } else {
+                $n = -$n;
+                while (1) {
+                    for (1..$j) {
+                        $code->();
+                        $i++;
+                    }
+                    _set_interval;
+                    last if $ti >= $n;
+                }
             }
-
-            while (1) {
-                last if $n >= 0 && $i >= $n;
-                $code->();
-                $ti = tv_interval($t0, [gettimeofday]);
-                $i++;
-                last if $n < 0 &&
-                    ($ti = tv_interval($t0, [gettimeofday])) >= -$n;
-            }
-            $ti //= tv_interval($t0, [gettimeofday]);
             my $res = join(
                 "",
                 (keys(%{$opts->{subs}}) > 1 ? "$codename: " : ""),
-                sprintf("%d calls (%.0f/s), $fmt ($fmt/call)",
-                        $i, $i/$ti, $ti, ($i ? $ti/$i : 0))
+                sprintf("%d calls (%.0f/s), %s (%s/call)",
+                        $i, $i/$ti, _fmt_sec($ti),
+                        _fmt_sec($i ? $ti/$i : 0))
             );
             say $res if $void;
             push @res, $res;
@@ -109,8 +142,8 @@ sub bench($;$) {
 }
 
 END {
-    say sprintf($fmt, tv_interval($t0, [gettimeofday]))
-        unless $bench_called || $ENV{HARNESS_ACTIVE};
+    $ti = tv_interval($t0, [gettimeofday]);
+    say _fmt_sec($ti) unless $bench_called || $ENV{HARNESS_ACTIVE};
 }
 
 1;
@@ -124,7 +157,7 @@ Bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.01
+version 0.02
 
 =head1 SYNOPSIS
 
