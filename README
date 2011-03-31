@@ -2,16 +2,16 @@ NAME
     Bench - Benchmark running times of Perl code
 
 VERSION
-    version 0.02
+    version 0.03
 
 SYNOPSIS
      # time the whole program
      % perl -MBench -e'...'
-     0.1234s
+     0.0123s
 
      # basic usage of bench()
      % perl -MBench -e'bench sub { ... }'
-     397 calls (198/s), 2.0054s (0.0051s/call)
+     100 calls (58548/s), 0.0017s (0.0171ms/call)
 
      # get bench result in a variable
      % perl -MBench -E'my $res = bench sub { ... }'
@@ -19,6 +19,7 @@ SYNOPSIS
      # specify bench options
      % perl -MBench -E'bench sub { ... }, 100'
      % perl -MBench -E'bench sub { ... }, {n=>-5}'
+     304347 calls (60665/s), 5.017s (0.0165ms/call)
 
      # use Dumbbench as the backend
      % perl -MDumbbench -MBench -E'bench sub { ... }'
@@ -27,9 +28,10 @@ SYNOPSIS
      Rounded run time per iteration: 2.9029e-02 +/- 4.8e-05 (0.2%)
 
      # bench multiple codes
-     % perl -MBench -E'bench {subs=>{a=>sub {...}, b=>sub {...}}, n=>-2}'
-     a: 397 calls (198/s), 2.0054s (0.0051s/call)
-     b: 294 calls (146/s), 2.0094s (0.0068s/call)
+     % perl -MBench -E'bench {a=>sub{...}, b=>sub{...}}, {n=>-2}'
+     % perl -MBench -E'bench [sub{...}, sub{...}]'; # automatically named a, b, ...
+     a: 100 calls (12120/s), 0.0083s (0.0825ms/call)
+     b: 100 calls (5357/s), 0.0187s (0.187ms/call)
 
 DESCRIPTION
     This module is an alternative to Benchmark. It provides some nice
@@ -40,31 +42,19 @@ DESCRIPTION
     This module can utilize Dumbbench as the backend.
 
 FUNCTIONS
-  bench
-    Syntax:
-
-     bench(CODEREF)                    # bench a single sub, default options
-     bench(CODEREF, HASHREF)           # specify options
-     bench(CODEREF, INT)               # equivalent to bench(CODEREF, {n=>INT})
-     bench(HASHREF)                    # bench multiple subs, must specify 'subs'
-
+  bench SUB(S)[, OPTS] => RESULT
     Run Perl code and time it. Exported by default. Will print the result if
-    called in void context.
+    called in void context. SUB can be a coderef for specifying a single
+    sub, or hashref/arrayref for specifying multiple subs.
 
-    Options are specified in HASHREF. Available options:
+    Options are specified in hashref OPTS. Available options:
 
     *   n => INT
 
         Run the code "n" times, or if negative, until at least "n" seconds.
 
-        If unspecified, the default behaviour is: if code runs for more than
-        2 seconds, it will only be run once (n=1). Otherwise n=-2.
-
-    *   subs => HASHREF
-
-        Specify subroutine(s) to time. You normally need not specify this
-        option, unless you want to time several subroutines instead of just
-        one.
+        If unspecified, the default behaviour is to run at most 1 second or
+        100 times.
 
     *   dumbbench => BOOL
 
