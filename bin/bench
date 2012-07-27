@@ -5,34 +5,37 @@ use strict;
 use warnings;
 use Cwd qw(abs_path);
 
-our $VERSION = '0.04'; # VERSION
+our $VERSION = '0.05'; # VERSION
 
 die <<_ unless @ARGV;
 Usage:
-  $0 <program> [arg ...]
-  $0 -e <code>
+  $0 <program> [args ...]
+  $0 -e <code> ...
 _
 
 my $code;
 if ($ARGV[0] eq '-e' && @ARGV > 1) {
-    $code = $ARGV[1];
-} elsif ($ARGV[0] =~ s/^-e// && @ARGV == 1) {
-    $code = $ARGV[0];
+    shift @ARGV;
+    $code++;
+} elsif ($ARGV[0] =~ s/^-e//) {
+    $code++;
 } elsif (!(-f $ARGV[0])) {
-    $code = $ARGV[0];
+    $code++;
 }
 
-if (defined $code) {
-    my $sub;
-    say "Benchmarking sub { $code } ...";
-    eval "\$sub = sub { $code };";
-    die $@ if $@;
+if ($code) {
+    my @subs;
+    say "Benchmarking ", join(", ", map { "sub { $_ }" } @ARGV), " ...";
+    for (@ARGV) {
+        eval "push \@subs, sub { $_ };";
+        die $@ if $@;
+    }
     require Bench;
-    Bench::bench($sub);
+    Bench::bench(\@subs);
 } else {
     my $prog  = shift @ARGV;
     my $aprog = abs_path($prog); # or die "can't abs_path($prog): $!\n";
-    say "Benchmarking program $aprog ...";
+    say "Benchmarking $aprog ...";
     require Bench; Bench->import;
     do $aprog;
 }
@@ -51,17 +54,20 @@ bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.04
+version 0.05
 
 =head1 SYNOPSIS
 
- % bench -e'some_code()'
+ % bench -e'some_code()'                     ; # -e is optional
+ Benchmarking sub { some_code() } ...
  26 calls (28.98/s), 0.897s (34.51ms/call)
 
- % bench 'some_code()'
+ % bench 'some_code()' 'another_code()'      ; # multiple code
+ Benchmarking sub { some_code() }, sub { another_code() } ...
  26 calls (28.98/s), 0.897s (34.51ms/call)
 
- % bench prog.pl; # if argument is a filename
+ % bench prog.pl;                            ; # file is automatically detected
+ Benchmarking /abs/path/to/prog.pl ...
  0.0320s
 
 =head1 DESCRIPTION
@@ -97,7 +103,7 @@ C<bench '...'> is shorter to type.
 
 =over 4
 
-=item * -I?
+=item * Accept -I?
 
 =back
 

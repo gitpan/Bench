@@ -2,7 +2,7 @@ NAME
     Bench - Benchmark running times of Perl code
 
 VERSION
-    version 0.04
+    version 0.05
 
 SYNOPSIS
      # time the whole program
