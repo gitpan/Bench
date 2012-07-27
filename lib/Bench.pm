@@ -1,8 +1,6 @@
 package Bench;
-BEGIN {
-  $Bench::VERSION = '0.03';
-}
-# ABSTRACT: Benchmark running times of Perl code
+
+our $VERSION = '0.04'; # VERSION
 
 use 5.010;
 use strict;
@@ -128,7 +126,7 @@ sub bench($;$) {
                 "",
                 (keys(%subs) > 1 ? "$name: " : ""),
                 sprintf("%d calls (%s/s), %s (%s/call)",
-                        $i, _fmt_num($i/$ti), _fmt_num($ti, "s"),
+                        $i, _fmt_num($ti ? $i/$ti : 0), _fmt_num($ti, "s"),
                         _fmt_num($ti/$i*1000, "ms"))
             );
             say $res if $void;
@@ -147,8 +145,10 @@ END {
 }
 
 1;
+# ABSTRACT: Benchmark running times of Perl code
 
 
+__END__
 =pod
 
 =head1 NAME
@@ -157,7 +157,7 @@ Bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.03
+version 0.04
 
 =head1 SYNOPSIS
 
@@ -179,7 +179,7 @@ version 0.03
 
  # use Dumbbench as the backend
  % perl -MDumbbench -MBench -E'bench sub { ... }'
- % perl -MBench -E'bench sub { ... }, {dummbench=>1, dumbbench_options=>{...}}'
+ % perl -MBench -E'bench sub { ... }, {dumbbench=>1, dumbbench_options=>{...}}'
  Ran 26 iterations (6 outliers).
  Rounded run time per iteration: 2.9029e-02 +/- 4.8e-05 (0.2%)
 
@@ -240,13 +240,10 @@ Steven Haryanto <stevenharyanto@gmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Steven Haryanto.
+This software is copyright (c) 2012 by Steven Haryanto.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
 

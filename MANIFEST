@@ -3,8 +3,10 @@ Changes
 LICENSE
 MANIFEST
 MANIFEST.SKIP
+META.json
 META.yml
 README
+bin/bench
 dist.ini
 lib/Bench.pm
 t/00-compile.t
