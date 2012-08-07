@@ -1,11 +1,12 @@
 package Bench;
 
-our $VERSION = '0.07'; # VERSION
+our $VERSION = '0.08'; # VERSION
 
 use 5.010;
 use strict;
 use warnings;
 
+use List::Util qw/shuffle/;
 use Module::Loaded;
 use Time::HiRes qw/gettimeofday tv_interval/;
 
@@ -88,7 +89,7 @@ sub bench($;$) {
 
         my %calltimes; # key=name, val=per-call time
 
-        for my $name (sort keys %subs) {
+        for my $name (shuffle keys %subs) {
             my $code = $subs{$name};
 
             my $n = $opts->{n};
@@ -174,7 +175,7 @@ Bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.07
+version 0.08
 
 =head1 SYNOPSIS
 
