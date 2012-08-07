@@ -1,6 +1,6 @@
 package Bench;
 
-our $VERSION = '0.05'; # VERSION
+our $VERSION = '0.06'; # VERSION
 
 use 5.010;
 use strict;
@@ -86,6 +86,8 @@ sub bench($;$) {
 
     } else {
 
+        my %calltimes; # key=name, val=per-call time
+
         for my $name (sort keys %subs) {
             my $code = $subs{$name};
 
@@ -131,8 +133,23 @@ sub bench($;$) {
             );
             say $res if $void;
             push @res, $res;
+            $calltimes{$name} = $ti/$i;
         }
 
+        if (keys(%subs) > 1) {
+            my @subs = sort {$a->[1] <=> $b->[1]}
+                map {[$_, $calltimes{$_}]} keys %subs;
+            if ($subs[0][1] > 0) {
+                my $res = "Fastest is $subs[0][0] (";
+                for (1..@subs-1) {
+                    $res .= ($_ > 1 ? ", ":"") .
+                        _fmt_num($subs[$_][1]/$subs[0][1], "x")." $subs[$_][0]";
+                }
+                $res .= ")";
+                say $res if $void;
+                push @res, $res;
+            }
+        }
     }
 
     $bench_called++;
@@ -157,7 +174,7 @@ Bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.05
+version 0.06
 
 =head1 SYNOPSIS
 

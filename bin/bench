@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Cwd qw(abs_path);
 
-our $VERSION = '0.05'; # VERSION
+our $VERSION = '0.06'; # VERSION
 
 die <<_ unless @ARGV;
 Usage:
@@ -31,7 +31,7 @@ if ($code) {
         die $@ if $@;
     }
     require Bench;
-    Bench::bench(\@subs);
+    Bench::bench(\@subs, {n=>-1});
 } else {
     my $prog  = shift @ARGV;
     my $aprog = abs_path($prog); # or die "can't abs_path($prog): $!\n";
@@ -54,7 +54,7 @@ bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.05
+version 0.06
 
 =head1 SYNOPSIS
 
@@ -94,6 +94,8 @@ is roughly equivalent to:
 =head2 Why use this instead of 'time prog.pl'?
 
 The script is more portable (should run under Windows too).
+
+On the other hand, B<bench> can only time Perl scripts.
 
 =head2 Why use this instead of 'perl -MBench -e'bench sub { ... }'?
 
