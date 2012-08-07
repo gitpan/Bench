@@ -1,6 +1,6 @@
 package Bench;
 
-our $VERSION = '0.06'; # VERSION
+our $VERSION = '0.07'; # VERSION
 
 use 5.010;
 use strict;
@@ -174,7 +174,7 @@ Bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.06
+version 0.07
 
 =head1 SYNOPSIS
 
