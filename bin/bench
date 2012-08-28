@@ -7,7 +7,7 @@ use warnings;
 use Cwd qw(abs_path);
 use Getopt::Long;
 
-our $VERSION = '0.08'; # VERSION
+our $VERSION = '0.09'; # VERSION
 
 my $err;
 my $code_m = sub {
@@ -42,6 +42,10 @@ GetOptions(
         eval $_[1];
         $err = $@ if $@;
     },
+    'v'     => sub {
+        say "$0 version $main::VERSION";
+        exit 0;
+    },
 );
 die $err if $err;
 
@@ -60,7 +64,8 @@ Options:
   -I <dir>   Prepend dir to @INC
   -m <mod>
   -M <mod>   Load module, like perl's -m/-M
-  -h         Show this help message
+  -h         Show this help message and exit
+  -v         Show version and exit
 
 _
   exit !$help;
@@ -103,7 +108,7 @@ bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.08
+version 0.09
 
 =head1 SYNOPSIS
 
@@ -124,6 +129,8 @@ version 0.08
 =head1 DESCRIPTION
 
 This script is a command-line interface for L<Bench>.
+
+For all available options, try C<bench -h>.
 
 =head1 AUTHOR
 

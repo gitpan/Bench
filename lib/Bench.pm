@@ -1,6 +1,6 @@
 package Bench;
 
-our $VERSION = '0.08'; # VERSION
+our $VERSION = '0.09'; # VERSION
 
 use 5.010;
 use strict;
@@ -175,7 +175,7 @@ Bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.08
+version 0.09
 
 =head1 SYNOPSIS
 
@@ -204,8 +204,9 @@ version 0.08
  # bench multiple codes
  % perl -MBench -E'bench {a=>sub{...}, b=>sub{...}}, {n=>-2}'
  % perl -MBench -E'bench [sub{...}, sub{...}]'; # automatically named a, b, ...
+ b: 100 calls (5357/s), 0.0187s (0.1870ms/call)
  a: 100 calls (12120/s), 0.0083s (0.0825ms/call)
- b: 100 calls (5357/s), 0.0187s (0.187ms/call)
+ Fastest is a (2.267x b)
 
 =head1 DESCRIPTION
 
@@ -247,6 +248,8 @@ Options that will be passed to Dumbbench constructor, e.g.
 =back
 
 =head1 SEE ALSO
+
+L<bench>, command-line interface for this module
 
 L<Benchmark>
 
