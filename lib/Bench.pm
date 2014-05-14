@@ -1,13 +1,11 @@
 package Bench;
 
-our $VERSION = '0.09'; # VERSION
+our $VERSION = '0.10'; # VERSION
 
-use 5.010;
+use 5.010001;
 use strict;
 use warnings;
 
-use List::Util qw/shuffle/;
-use Module::Loaded;
 use Time::HiRes qw/gettimeofday tv_interval/;
 
 my $bench_called;
@@ -49,6 +47,8 @@ sub bench($;$) {
     my ($subs0, $opts) = @_;
     $opts //= {};
     $opts   = {n=>$opts} if ref($opts) ne 'HASH';
+    $opts->{t} //= 1;
+    $opts->{n} //= 100;
     my %subs;
     if (ref($subs0) eq 'CODE') {
         %subs = (a=>$subs0);
@@ -69,10 +69,9 @@ sub bench($;$) {
         $use_dumbbench++;
         require Dumbbench;
     } elsif (!defined $opts->{dumbbench}) {
-        $use_dumbbench++ if is_loaded('Dumbbench');
+        $use_dumbbench++ if $INC{"Dumbbench.pm"};
     }
 
-    my @res;
     my $void = !defined(wantarray);
     if ($use_dumbbench) {
 
@@ -86,75 +85,14 @@ sub bench($;$) {
         $bench->report;
 
     } else {
-
-        my %calltimes; # key=name, val=per-call time
-
-        for my $name (shuffle keys %subs) {
-            my $code = $subs{$name};
-
-            my $n = $opts->{n};
-
-            # run code once to set default n & j (to reduce the number of
-            # time-interval-taking when n is negative)
-            my $i = 0;
-            _set_start_time;
-            $code->();
-            _set_interval;
-            my $j = $ti ? int(1/$ti) : 1000;
-            $i++;
-            if ($ti <= 0.01) {
-                $n //= 100;
-            } else {
-                $n //= int(1/$ti);
-            }
-
-            if ($n >= 0) {
-                while ($i < $n) {
-                    $code->();
-                    $i++;
-                }
-                _set_interval;
-            } else {
-                $n = -$n;
-                while (1) {
-                    for (1..$j) {
-                        $code->();
-                        $i++;
-                    }
-                    _set_interval;
-                    last if $ti >= $n;
-                }
-            }
-            my $res = join(
-                "",
-                (keys(%subs) > 1 ? "$name: " : ""),
-                sprintf("%d calls (%s/s), %s (%s/call)",
-                        $i, _fmt_num($ti ? $i/$ti : 0), _fmt_num($ti, "s"),
-                        _fmt_num($ti/$i*1000, "ms"))
-            );
-            say $res if $void;
-            push @res, $res;
-            $calltimes{$name} = $ti/$i;
-        }
-
-        if (keys(%subs) > 1) {
-            my @subs = sort {$a->[1] <=> $b->[1]}
-                map {[$_, $calltimes{$_}]} keys %subs;
-            if ($subs[0][1] > 0) {
-                my $res = "Fastest is $subs[0][0] (";
-                for (1..@subs-1) {
-                    $res .= ($_ > 1 ? ", ":"") .
-                        _fmt_num($subs[$_][1]/$subs[0][1], "x")." $subs[$_][0]";
-                }
-                $res .= ")";
-                say $res if $void;
-                push @res, $res;
-            }
-        }
+        require Benchmark;
+        Benchmark::timethese(
+            $opts->{n},
+            \%subs,
+        );
     }
 
     $bench_called++;
-    join("\n", @res);
 }
 
 END {
@@ -165,9 +103,11 @@ END {
 1;
 # ABSTRACT: Benchmark running times of Perl code
 
-
 __END__
+
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -175,7 +115,7 @@ Bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.09
+This document describes version 0.10 of Bench (from Perl distribution Bench), released on 2014-05-14.
 
 =head1 SYNOPSIS
 
@@ -210,30 +150,27 @@ version 0.09
 
 =head1 DESCRIPTION
 
-This module is an alternative to L<Benchmark>. It provides some nice defaults
-and a simpler interface. There is only one function, B<bench()>, and it is
-exported by default. If bench() is never called, the whole program will be
+This module is an alternative interface for L<Benchmark>. It provides some nice
+defaults and a simpler interface. There is only one function, B<bench()>, and it
+is exported by default. If bench() is never called, the whole program will be
 timed.
 
-This module can utilize L<Dumbbench> as the backend.
+This module can utilize L<Dumbbench> as the backend instead of L<Benchmark>.
 
 =head1 FUNCTIONS
 
-=head2 bench SUB(S)[, OPTS] => RESULT
+=head2 bench SUB(S)[, OPTS]
 
-Run Perl code and time it. Exported by default. Will print the result if called
-in void context. SUB can be a coderef for specifying a single sub, or
-hashref/arrayref for specifying multiple subs.
+Run Perl code(s) and time it (them). Exported by default. SUB can be a coderef
+for specifying a single sub, or hashref/arrayref for specifying multiple subs.
 
 Options are specified in hashref OPTS. Available options:
 
 =over 4
 
-=item * n => INT
+=item * n => INT (default: 100)
 
-Run the code C<n> times, or if negative, until at least C<n> seconds.
-
-If unspecified, the default behaviour is to run at most 1 second or 100 times.
+Run the code C<n> times, or if negative, until at least C<n> CPU seconds.
 
 =item * dumbbench => BOOL
 
@@ -255,16 +192,31 @@ L<Benchmark>
 
 L<Dumbbench>
 
+=head1 HOMEPAGE
+
+Please visit the project's homepage at L<https://metacpan.org/release/Bench>.
+
+=head1 SOURCE
+
+Source repository is at L<https://github.com/sharyanto/perl-Bench>.
+
+=head1 BUGS
+
+Please report any bugs or feature requests on the bugtracker website L<https://rt.cpan.org/Public/Dist/Display.html?Name=Bench>
+
+When submitting a bug or request, please include a test-file or a
+patch to an existing test-file that illustrates the bug or desired
+feature.
+
 =head1 AUTHOR
 
 Steven Haryanto <stevenharyanto@gmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Steven Haryanto.
+This software is copyright (c) 2014 by Steven Haryanto.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

@@ -2,7 +2,8 @@ NAME
     Bench - Benchmark running times of Perl code
 
 VERSION
-    version 0.09
+    This document describes version 0.10 of Bench (from Perl distribution
+    Bench), released on 2014-05-14.
 
 SYNOPSIS
      # time the whole program
@@ -35,27 +36,25 @@ SYNOPSIS
      Fastest is a (2.267x b)
 
 DESCRIPTION
-    This module is an alternative to Benchmark. It provides some nice
-    defaults and a simpler interface. There is only one function, bench(),
-    and it is exported by default. If bench() is never called, the whole
-    program will be timed.
+    This module is an alternative interface for Benchmark. It provides some
+    nice defaults and a simpler interface. There is only one function,
+    bench(), and it is exported by default. If bench() is never called, the
+    whole program will be timed.
 
-    This module can utilize Dumbbench as the backend.
+    This module can utilize Dumbbench as the backend instead of Benchmark.
 
 FUNCTIONS
-  bench SUB(S)[, OPTS] => RESULT
-    Run Perl code and time it. Exported by default. Will print the result if
-    called in void context. SUB can be a coderef for specifying a single
-    sub, or hashref/arrayref for specifying multiple subs.
+  bench SUB(S)[, OPTS]
+    Run Perl code(s) and time it (them). Exported by default. SUB can be a
+    coderef for specifying a single sub, or hashref/arrayref for specifying
+    multiple subs.
 
     Options are specified in hashref OPTS. Available options:
 
-    *   n => INT
+    *   n => INT (default: 100)
 
-        Run the code "n" times, or if negative, until at least "n" seconds.
-
-        If unspecified, the default behaviour is to run at most 1 second or
-        100 times.
+        Run the code "n" times, or if negative, until at least "n" CPU
+        seconds.
 
     *   dumbbench => BOOL
 
@@ -75,11 +74,25 @@ SEE ALSO
 
     Dumbbench
 
+HOMEPAGE
+    Please visit the project's homepage at
+    <https://metacpan.org/release/Bench>.
+
+SOURCE
+    Source repository is at <https://github.com/sharyanto/perl-Bench>.
+
+BUGS
+    Please report any bugs or feature requests on the bugtracker website
+    <https://rt.cpan.org/Public/Dist/Display.html?Name=Bench>
+
+    When submitting a bug or request, please include a test-file or a patch
+    to an existing test-file that illustrates the bug or desired feature.
+
 AUTHOR
     Steven Haryanto <stevenharyanto@gmail.com>
 
 COPYRIGHT AND LICENSE
-    This software is copyright (c) 2012 by Steven Haryanto.
+    This software is copyright (c) 2014 by Steven Haryanto.
 
     This is free software; you can redistribute it and/or modify it under
     the same terms as the Perl 5 programming language system itself.

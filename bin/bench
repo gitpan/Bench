@@ -7,8 +7,10 @@ use warnings;
 use Cwd qw(abs_path);
 use Getopt::Long;
 
-our $VERSION = '0.09'; # VERSION
+our $VERSION = '0.10'; # VERSION
+our $DATE = '2014-05-14'; # DATE
 
+# code to implement -m and -M options
 my $err;
 my $code_m = sub {
     my $imp   = $_[0] eq 'm' ? ' ()' : '';
@@ -25,7 +27,7 @@ my $code_m = sub {
 };
 
 my @codes;
-my %opts = (n=>-1, help=>0);
+my %opts = (n=>100, help=>0);
 
 Getopt::Long::Configure('bundling', 'no_permute', 'no_ignore_case');
 GetOptions(
@@ -43,7 +45,7 @@ GetOptions(
         $err = $@ if $@;
     },
     'v'     => sub {
-        say "$0 version $main::VERSION";
+        say "bench version $main::VERSION";
         exit 0;
     },
 );
@@ -54,11 +56,13 @@ if (!@codes && !@ARGV || $help) {
 bench - Benchmark running times of Perl code
 
 Usage:
-  $0 [options] <perl-program> [program-args ...]
-  $0 [options] <code> ...
+  bench [options] <perl-program> [program-args ...]
+  bench [options] <code> ...
 
 Options:
-  -n N       How many times (or how long in -N secs, if N < 0) to run the subs
+  -n N (default: 100)
+             How many times (or how long in -N CPU secs, if N < 0) to run the
+             subs
   -e <code>  Add subroutine code to bench (can also add via arguments)
   -b <code>  Run code before benchmarking
   -I <dir>   Prepend dir to @INC
@@ -98,9 +102,11 @@ if (!@codes && (-f $ARGV[0])) {
 # ABSTRACT: Benchmark running times of Perl code
 # PODNAME: bench
 
-
 __END__
+
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -108,7 +114,7 @@ bench - Benchmark running times of Perl code
 
 =head1 VERSION
 
-version 0.09
+This document describes version 0.10 of bench (from Perl distribution Bench), released on 2014-05-14.
 
 =head1 SYNOPSIS
 
@@ -132,16 +138,31 @@ This script is a command-line interface for L<Bench>.
 
 For all available options, try C<bench -h>.
 
+=head1 HOMEPAGE
+
+Please visit the project's homepage at L<https://metacpan.org/release/Bench>.
+
+=head1 SOURCE
+
+Source repository is at L<https://github.com/sharyanto/perl-Bench>.
+
+=head1 BUGS
+
+Please report any bugs or feature requests on the bugtracker website L<https://rt.cpan.org/Public/Dist/Display.html?Name=Bench>
+
+When submitting a bug or request, please include a test-file or a
+patch to an existing test-file that illustrates the bug or desired
+feature.
+
 =head1 AUTHOR
 
 Steven Haryanto <stevenharyanto@gmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Steven Haryanto.
+This software is copyright (c) 2014 by Steven Haryanto.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
